@@ -207,4 +207,4 @@ logs/
 config.ini
 secrets.json
 .env.local
-.env.production 
+.env.production

@@ -212,7 +212,7 @@ sns.scatterplot(x=y_test, y=y_pred, alpha=0.6)
 plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
 plt.xlabel("Harga Aktual (per unit)")
 plt.ylabel("Harga Prediksi (per unit)")
-plt.title("Prediksi Harga vs Harga Aktual")
+plt.title("Harga Prediksi vs Harga Aktual")
 plt.grid(True)
 plt.show()
 
@@ -223,9 +223,9 @@ if not X_train.empty:
 
     plt.figure(figsize=(12, 7))
     sns.barplot(x=feature_importances.head(10), y=feature_importances.head(10).index)
-    plt.title("Top 10 Feature Importances")
-    plt.xlabel("Importance")
-    plt.ylabel("Feature")
+    plt.title("10 Kepentingan Fitur Teratas")
+    plt.xlabel("Kepentingan")
+    plt.ylabel("Fitur")
     plt.tight_layout()
     plt.show()
 else:

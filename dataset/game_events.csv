@@ -1,5 +1,0 @@
-event_id,event_name,event_type,start_date,end_date,affected_items,description
-GE001,Double Drop Rate Event,Boost,2025-06-22 00:00:00,2025-06-25 23:59:59,"['RES_001', 'RES_002', 'RES_003']",All resource drop rates doubled
-GE002,New Crafting Recipe,Update,2025-06-24 12:00:00,,['WEA_002'],Introduced new powerful weapon
-GE003,Crafting Cost Reduction,Boost,2025-06-26 00:00:00,2025-06-29 23:59:59,"['CRA_001', 'CRA_002']",Crafting costs for basic materials reduced by 20%
-GE004,Boss Event: Shadow Lord,Content,2025-06-27 10:00:00,2025-06-29 22:00:00,"['LEG_001']",New boss with chance to drop LEG_001
