@@ -72,7 +72,32 @@ df['rarity_encoded'] = df['rarity'].map(rarity_mapping)
 df = pd.get_dummies(df, columns=['item_type'], prefix='type', drop_first=True)
 
 # Fitur craftable (ubah ke int)
-df['craftable_int'] = df['craftable'].astype(int)
+try:
+    # --- Perbaikan di sini: Konversi 'craftable' ke boolean saat membaca ---
+    item_metadata_df = pd.read_csv(csv_files['item_metadata'], converters={
+        'craftable': lambda x: True if str(x).lower() == 'true' else False
+    })
+    # Atau jika 'True'/'False' terbaca sebagai string, gunakan converters:
+    # item_metadata_df = pd.read_csv(csv_files['item_metadata'], converters={'craftable': lambda x: x == 'True'})
+    print(f"- '{csv_files['item_metadata']}' berhasil dimuat.")
+    
+    transaction_history_df = pd.read_csv(csv_files['transaction_history'], parse_dates=['timestamp'])
+    print(f"- '{csv_files['transaction_history']}' berhasil dimuat.")
+    
+    market_listings_snapshot_df = pd.read_csv(csv_files['market_listings_snapshot'], parse_dates=['timestamp'])
+    print(f"- '{csv_files['market_listings_snapshot']}' berhasil dimuat.")
+    
+    game_events_df = pd.read_csv(csv_files['game_events'], parse_dates=['start_date', 'end_date'])
+    game_events_df['affected_items'] = game_events_df['affected_items'].fillna('[]') # Perbaikan sebelumnya
+    game_events_df['affected_items'] = game_events_df['affected_items'].apply(eval)  # Perbaikan sebelumnya
+    print(f"- '{csv_files['game_events']}' berhasil dimuat.")
+
+except Exception as e:
+    print(f"Terjadi kesalahan saat memuat file CSV: {e}")
+    print("Kemungkinan besar ada masalah format data di salah satu file.")
+    exit()
+
+print("Semua DataFrame berhasil dimuat dari file CSV.\n")
 
 print("Menghitung fitur historis (rolling averages & std dev)... Ini mungkin butuh waktu.")
 # Fitur Harga Historis (Moving Averages & Volatility)
@@ -121,12 +146,15 @@ print("Menambahkan fitur event game...")
 df['is_event_active'] = df.apply(lambda row: is_event_active(row['timestamp_orig'], row['item_id'], game_events_df), axis=1)
 print("Fitur event game selesai ditambahkan.\n")
 
+df['crafting_cost_base'] = pd.to_numeric(df['crafting_cost_base'], errors='coerce').fillna(0)
+df['base_value'] = pd.to_numeric(df['base_value'], errors='coerce').fillna(0) # Konversi ulang base_value juga
 
 # Hapus kolom yang tidak lagi diperlukan atau akan menyebabkan kebocoran data
 # Kolom 'timestamp' (asli) baru di-drop di sini setelah semua perhitungan yang membutuhkannya selesai
 df_processed = df.drop(columns=[
     'transaction_id', 'item_name', 'rarity', 'source_method', 'usage_effect',
-    'craftable', 'total_price', 'buyer_id', 'seller_id', 'timestamp' # Sekarang aman untuk drop 'timestamp'
+    'craftable', 'total_price', 'buyer_id', 'seller_id', 'timestamp', # Sekarang aman untuk drop 'timestamp'
+    'required_materials_ids', 'required_materials_qty', # <-- DROP KOLOM-KOLOM INI
 ])
 
 # Pastikan tidak ada NaN yang tersisa di fitur yang akan digunakan untuk training
@@ -186,10 +214,16 @@ print(f"Dataset dibagi. Data training hingga tanggal {split_date.strftime('%Y-%m
 
 # --- 4. Pilih dan Latih Model AI (Regressor) ---
 
+print("--- Memeriksa tipe data X_train sebelum melatih model ---")
+print(X_train.dtypes)
+print("-------------------------------------------------------")
+
+# Inisialisasi model
 model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
 
+# Latih model
 print("Melatih model RandomForestRegressor...")
-model.fit(X_train, y_train)
+model.fit(X_train, y_train) # <--- Baris error Anda
 print("Model selesai dilatih.\n")
 
 # Prediksi pada test set
